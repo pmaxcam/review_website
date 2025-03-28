@@ -2,23 +2,44 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
-  // Get the auth code from the URL
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
+  const token = url.searchParams.get('token');
+  const type = url.searchParams.get('type');
   
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
+  );
+  
+  // Handle OAuth code exchange
   if (code) {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
-    );
-    
-    // Exchange the code for a session
     await supabase.auth.exchangeCodeForSession(code);
-    
-    // Redirect to the home page or dashboard after successful authentication
     return NextResponse.redirect(new URL('/', request.url));
   }
   
-  // If no code is present, redirect to login page
-  return NextResponse.redirect(new URL('/login', request.url));
+  // Handle email verification
+  if (token && type === 'signup') {
+    try {
+      // Verify the email with the token
+      await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: 'signup',
+      });
+      
+      // Redirect to login page with success message
+      return NextResponse.redirect(new URL('/auth/login?verified=true', request.url));
+    } catch (error) {
+      console.error('Email verification error:', error);
+      return NextResponse.redirect(new URL('/auth/login?error=verification_failed', request.url));
+    }
+  }
+  
+  // Handle password reset
+  if (token && type === 'recovery') {
+    return NextResponse.redirect(new URL(`/auth/reset-password?token=${token}`, request.url));
+  }
+  
+  // If no valid parameters are present, redirect to login page
+  return NextResponse.redirect(new URL('/auth/login', request.url));
 } 

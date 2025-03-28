@@ -116,8 +116,12 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export default function ToolDetailPage({ params }: { params: { id: string } }) {
+export default function ToolDetailPage({ params, searchParams }: { 
+  params: { id: string },
+  searchParams?: { [key: string]: string | string[] | undefined }
+}) {
   const tool = getToolById(params.id);
+  const defaultTab = searchParams?.tab as string || "overview";
   
   return (
     <div className="container py-12 px-4 md:px-6">
@@ -167,7 +171,7 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
             </div>
           </div>
 
-          <Tabs defaultValue="overview" className="w-full">
+          <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-3 md:grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="features">Features</TabsTrigger>

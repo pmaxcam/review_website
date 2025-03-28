@@ -7,6 +7,7 @@ import { Analytics } from "@/components/analytics";
 import { Providers } from "@/components/providers";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { AuthProvider } from "@/contexts/auth-context";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -55,12 +56,14 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Providers>
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-            <Toaster position="bottom-right" />
+            <AuthProvider>
+              <Header />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+              <Toaster position="bottom-right" />
+            </AuthProvider>
             <Analytics />
           </Providers>
         </ThemeProvider>
